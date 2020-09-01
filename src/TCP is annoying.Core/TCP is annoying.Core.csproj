@@ -42,12 +42,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Messages\Message.cs" />
+    <Compile Include="Messages\Packet.cs" />
+    <Compile Include="Net\Client\NetClient.cs" />
     <Compile Include="Net\Network.cs" />
     <Compile Include="Net\Server\NetServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Net\Client\" />
     <Folder Include="Net\Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
