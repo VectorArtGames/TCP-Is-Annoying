@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TCP_is_annoying.Core.Messages
 {
+	[Serializable]
 	public struct Packet
 	{
 		public uint Pack { get; set; }

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using TCP_is_annoying.Core.Memory;
+using TCP_is_annoying.Core.Messages;
 using TCP_is_annoying.Core.Net;
 
 namespace TCP_is_annoying.Base
@@ -52,20 +55,33 @@ namespace TCP_is_annoying.Base
 
 		private static void Server_OnStreamOpened(object sender, NetworkStream e)
 		{
-			var m = new byte[255];
-			while (e.Read(m, 0, m.Length) > 0)
+			var m = new byte[Message.BufferSize];
+			e.Read(m, 0, m.Length);
+
+			if (m.Deserialize<Message>() is Message msg)
 			{
-				Console.WriteLine(BitConverter.ToInt32(m, 0));
+				Console.WriteLine(Encoding.ASCII.GetString(msg.Data));
 			}
 		}
 
 		private static void Client_OnStreamOpened(object sender, NetworkStream e)
 		{
-			var m = new byte[255];
+			var m = new byte[Message.BufferSize];
 
-			BitConverter
-				.GetBytes(55)
-				.CopyTo(m, 0);
+			var msg = new Message
+			{
+				Data = Encoding.ASCII.GetBytes("Hello father, I've missed you..\nI'm your long lost son.\n")
+			};
+
+			if (msg.Data.Length > m.Length)
+			{
+				Console.WriteLine("Data too long!\nPlease increase buffer size");
+				return;
+			}
+
+			var b = msg.Serialize();
+
+			b.CopyTo(m, 0);
 
 			e.Write(m, 0, m.Length);
 			e.Flush();
