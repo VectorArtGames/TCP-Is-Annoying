@@ -1,26 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using TCP_is_annoying.Core.Memory;
 using TCP_is_annoying.Core.Messages;
 using TCP_is_annoying.Core.Net;
+using TCP_is_annoying.Core.Net.Stream;
 
 namespace TCP_is_annoying.Base
 {
-    public class NetMaster
-    {
-        public static void Run()
-        {
-            var n = new Network();
-            n.OnInitializedClient += Net_OnInitializedClient;
+	public class NetMaster
+	{
+		public static void Run()
+		{
+			var n = new Network();
+			n.OnInitializedClient += Net_OnInitializedClient;
 			n.OnInitializedServer += N_OnInitializedServer;
 
 			n.InitializeServer();
-        }
+		}
 
 		private static void N_OnInitializedServer(object sender, EventArgs e)
 		{
@@ -53,38 +56,36 @@ namespace TCP_is_annoying.Base
 			net.Client.RunConnect();
 		}
 
-		private static void Server_OnStreamOpened(object sender, NetworkStream e)
+		//! Server Code - Receive
+		private static async void Server_OnStreamOpened(object sender, NetworkStream e)
 		{
-			var m = new byte[Message.BufferSize];
-			e.Read(m, 0, m.Length);
+			var buffer = new byte[63635];
 
-			if (m.Deserialize<Message>() is Message msg)
-			{
-				Console.WriteLine(Encoding.ASCII.GetString(msg.Data));
-			}
+			await e.ReadAsync(buffer, 0, 8);
+			var len = BitConverter.ToInt32(buffer.Take(8).ToArray(), 0);
+
+			await e.ReadAsync(buffer, 8, len);
+
+			var data = buffer.Skip(8).Take(len).ToArray();
+
+			var msg = Encoding.ASCII.GetString(data);
+
+			Console.WriteLine($"Received! {len}\nData: {data.Length}\nMessage: {msg}");
 		}
 
-		private static void Client_OnStreamOpened(object sender, NetworkStream e)
+		//! Client Code - Send
+		private static async void Client_OnStreamOpened(object sender, NetworkStream e)
 		{
-			var m = new byte[Message.BufferSize];
+			var l = new byte[sizeof(long)];
 
-			var msg = new Message
-			{
-				Data = Encoding.ASCII.GetBytes("Hello father, I've missed you..\nI'm your long lost son.\n")
-			};
+			var msg = Encoding.ASCII.GetBytes(new string('>', 1555));
 
-			if (msg.Data.Length > m.Length)
-			{
-				Console.WriteLine("Data too long!\nPlease increase buffer size");
-				return;
-			}
+			BitConverter.GetBytes(msg.Length)
+				.CopyTo(l, 0);
 
-			var b = msg.Serialize();
-
-			b.CopyTo(m, 0);
-
-			e.Write(m, 0, m.Length);
-			e.Flush();
+			await e.WriteAsync(l, 0, l.Length);
+			await e.WriteAsync(msg, 0, msg.Length);
+			await e.FlushAsync();
 		}
 
 		private static void Server_OnNewConnection(object sender, TcpClient e)

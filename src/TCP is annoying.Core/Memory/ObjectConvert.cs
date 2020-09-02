@@ -23,16 +23,22 @@ namespace TCP_is_annoying.Core.Memory
 			}
 		}
 
-		public static T? Deserialize<T>(this byte[] data) where T : struct
+		public static object Deserialize(this byte[] data)
 		{
 			if (data == null)
 				return null;
-
-			var f = new BinaryFormatter();
-			using (var ms = new MemoryStream(data))
+			try
 			{
-				var obj = f.Deserialize(ms);
-				return (T)obj;
+				var f = new BinaryFormatter();
+				using (var ms = new MemoryStream(data))
+				{
+					var obj = f.Deserialize(ms);
+					return obj;
+				}
+			}
+			catch
+			{
+				return null;
 			}
 		}
 	}

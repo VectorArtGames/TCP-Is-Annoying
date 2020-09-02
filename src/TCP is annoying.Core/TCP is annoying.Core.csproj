@@ -41,12 +41,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Memory\BufferManager.cs" />
     <Compile Include="Memory\ObjectConvert.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\Packet.cs" />
     <Compile Include="Net\Client\NetClient.cs" />
     <Compile Include="Net\Network.cs" />
     <Compile Include="Net\Server\NetServer.cs" />
+    <Compile Include="Net\Stream\StreamHandle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

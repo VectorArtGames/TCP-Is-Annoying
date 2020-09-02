@@ -9,6 +9,7 @@ namespace TCP_is_annoying.Core.Messages
 	[Serializable]
 	public struct Packet
 	{
+		public const long BufferSize = 256;
 		public uint Pack { get; set; }
 	}
 }

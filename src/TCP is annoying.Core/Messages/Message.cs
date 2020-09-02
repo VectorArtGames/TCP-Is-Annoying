@@ -9,7 +9,7 @@ namespace TCP_is_annoying.Core.Messages
     [Serializable]
     public struct Message
     {
-		public const int BufferSize = 1024;
+		public const long BufferSize = 256;
 
         public byte[] Data;
     }
