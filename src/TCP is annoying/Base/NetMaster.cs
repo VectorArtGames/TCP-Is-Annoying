@@ -7,10 +7,10 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using TCP_is_annoying.Core.Extensions;
 using TCP_is_annoying.Core.Memory;
 using TCP_is_annoying.Core.Messages;
 using TCP_is_annoying.Core.Net;
-using TCP_is_annoying.Core.Net.Stream;
 
 namespace TCP_is_annoying.Base
 {
@@ -57,35 +57,43 @@ namespace TCP_is_annoying.Base
 		}
 
 		//! Server Code - Receive
-		private static async void Server_OnStreamOpened(object sender, NetworkStream e)
+		private static void Server_OnStreamOpened(object sender, NetworkStream e)
 		{
-			var buffer = new byte[63635];
+			e.StartReading();
+			//try
+			//{
+			//	var buffer = new byte[8];
 
-			await e.ReadAsync(buffer, 0, 8);
-			var len = BitConverter.ToInt32(buffer.Take(8).ToArray(), 0);
+			//	await e.ReadAsync(buffer, 0, 8);
+			//	var len = BitConverter.ToInt32(buffer, 0);
 
-			await e.ReadAsync(buffer, 8, len);
+			//	// Resize array of buffer
+			//	Array.Resize(ref buffer, buffer.Length + len);
 
-			var data = buffer.Skip(8).Take(len).ToArray();
+			//	await e.ReadAsync(buffer, 8, len);
 
-			var msg = Encoding.ASCII.GetString(data);
 
-			Console.WriteLine($"Received! {len}\nData: {data.Length}\nMessage: {msg}");
+			//	if (buffer.Length < 8) return;
+
+			//	var data = buffer.Skip(8).Take(len).ToArray();
+
+			//	var msg = Encoding.ASCII.GetString(data);
+
+			//	Console.WriteLine($"Received Package!\n{len}\nData: {data.Length}\nMessage: {msg}");
+			//}
+			//catch
+			//{
+			//	Console.WriteLine("Malformed package!");
+			//}
 		}
 
 		//! Client Code - Send
-		private static async void Client_OnStreamOpened(object sender, NetworkStream e)
+		private static void Client_OnStreamOpened(object sender, NetworkStream e)
 		{
-			var l = new byte[sizeof(long)];
-
-			var msg = Encoding.ASCII.GetBytes(new string('>', 1555));
-
-			BitConverter.GetBytes(msg.Length)
-				.CopyTo(l, 0);
-
-			await e.WriteAsync(l, 0, l.Length);
-			await e.WriteAsync(msg, 0, msg.Length);
-			await e.FlushAsync();
+			for (var i = 0; i < 5; i++)
+			{
+				e.Send(Encoding.ASCII.GetBytes($"{i} Hello there =)"));
+			}
 		}
 
 		private static void Server_OnNewConnection(object sender, TcpClient e)
